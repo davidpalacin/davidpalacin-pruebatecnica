@@ -53,7 +53,6 @@ router.get("/byname/:name", (req, res) => {
   try {
     const name = req.params.name;
     const sql = `SELECT * FROM users WHERE name = '${name}'`;
-    console.log(sql);
 
     db.get(sql, [], (err: Error, row: any) => {
       if (err) {
@@ -74,29 +73,44 @@ router.get("/byname/:name", (req, res) => {
 // Crear un usuario
 router.post("/create", async (req, res) => {
   try {
-    const errors: string[] = userServices.checkEmptyFields(req.body);
-    // Si falta información, no permito crear el usuario
-    if (errors.length > 0) {
-      res.status(400).json(errors);
-      return;
-    } else {
-      // Hasheamos la contraseña del usuario para no guardar texto plano, creo el objeto de nuevo usuario y se inserta en BD
-      const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const newUserEntry = toNewUserEntry(req.body, hashedPassword);
+    // Hago una llamada a mi propia API para saber si ese nombre de usuario está registrado
+    const call = await fetch(
+      "http://localhost:3000/api/users/byname/" + req.body.name
+    );
+    const userExist = await call.json();
 
-      const sql = `INSERT INTO users (name, email, password, role) VALUES
+    if (userExist.error) {
+      // El usuario no existe porque mi API me devuelve un obj.error, así que se puede usar ese nombre de usuario
+      const errors: string[] = userServices.checkEmptyFields(req.body);
+      // Si falta información, no permito crear el usuario
+      if (errors.length > 0) {
+        res.status(400).json(errors);
+        return;
+      } else {
+        // Hasheamos la contraseña del usuario para no guardar texto plano, creo el objeto de nuevo usuario y se inserta en BD
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        const newUserEntry = toNewUserEntry(req.body, hashedPassword);
+
+        const sql = `INSERT INTO users (name, email, password, role) VALUES
       ('${newUserEntry.name}', '${newUserEntry.email}', '${newUserEntry.password}', '${newUserEntry.role}');`;
 
-      db.run(sql, [], function (err: Error, _result: any) {
-        if (err) {
-          res.status(400).json({ error: err.message });
-          return;
-        }
-        res.json({
-          message: `Added ${newUserEntry.name} to database`,
-          data: newUserEntry,
+        db.run(sql, [], function (err: Error, _result: any) {
+          if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+          }
+          res.json({
+            message: `Added ${newUserEntry.name} to database`,
+            data: newUserEntry,
+          });
         });
-      });
+      }
+    } else {
+      res
+        .status(400)
+        .json({
+          error: "Ese nombre de usuario es existente, por favor, elige otro",
+        });
     }
   } catch (e) {
     res.status(500).send("Internal Server Error");
@@ -126,7 +140,7 @@ router.post("/login", (req, res) => {
         );
         res.json({ accessToken: accessToken });
       } else {
-        res.json({error: "Credenciales incorrectas"});
+        res.json({ error: "Credenciales incorrectas" });
       }
     } else {
       res.status(404).json({ error: "User not found" });
