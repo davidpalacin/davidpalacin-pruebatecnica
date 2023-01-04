@@ -1,7 +1,5 @@
 import { NewUserEntry, NonSensitiveInfoUserEntry, UserEntry } from "../types";
 
-const users: UserEntry[] = userData as UserEntry[];
-
 export const getUsers = (users: UserEntry[]): UserEntry[] => users;
 
 export const getUsersWithoutSensitiveInfo = (users: UserEntry[]): NonSensitiveInfoUserEntry[] => {
