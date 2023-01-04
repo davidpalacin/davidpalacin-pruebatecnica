@@ -1,49 +1,18 @@
-import { NewUserEntry, NonSensitiveInfoUserEntry, UserEntry } from "../types";
+import { NonSensitiveInfoUserEntry, UserEntry } from "../types";
 
-export const getUsers = (users: UserEntry[]): UserEntry[] => users;
-
+// Recibe usuarios y los devuelve sin la información sensible
 export const getUsersWithoutSensitiveInfo = (users: UserEntry[]): NonSensitiveInfoUserEntry[] => {
   return users.map(({id, name,email, role}) => {
     return {id, name, email, role}
   })
 };
 
+// Recibe un usuario y lo devuelve sin la información sensible
 export const getUserWithoutSensitiveInfo = (user: UserEntry): NonSensitiveInfoUserEntry => {
   return {id: user.id, name: user.name, email: user.email, role: user.role}
 };
 
-export const findById = (id: number): NonSensitiveInfoUserEntry | undefined => {
-  const entry = users.find((u) => u.id === id);
-  if (entry != null) {
-    const { password, ...restOfUser } = entry;
-    return restOfUser;
-  }
-
-  return undefined;
-};
-
-export const findByName = (
-  name: string
-): NonSensitiveInfoUserEntry | undefined => {
-  const entry = users.find((u) => u.name === name);
-  if (entry != null) {
-    const { password, ...restOfUser } = entry;
-    return restOfUser;
-  }
-
-  return undefined;
-};
-
-export const addUser = (newUserEntry: NewUserEntry): NewUserEntry => {
-  const newUser = {
-    id: Math.max(...users.map((u) => u.id)) + 1,
-    ...newUserEntry,
-  };
-
-  users.push(newUser);
-  return newUser;
-};
-
+// Comprueba si queda información por rellenar
 export const checkEmptyFields = (object: any): string[] => {
   const errors: string[] = [];
 

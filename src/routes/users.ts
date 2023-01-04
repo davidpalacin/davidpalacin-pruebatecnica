@@ -87,7 +87,7 @@ router.post("/create", async (req, res) => {
       const sql = `INSERT INTO users (name, email, password, role) VALUES
       ('${newUserEntry.name}', '${newUserEntry.email}', '${newUserEntry.password}', '${newUserEntry.role}');`;
 
-      db.run(sql, [], function (err: Error, result: any) {
+      db.run(sql, [], function (err: Error, _result: any) {
         if (err) {
           res.status(400).json({ error: err.message });
           return;
@@ -147,7 +147,7 @@ router.patch("/update/:id", (req, res) => {
   db.run(
     sql,
     [data.name, data.email, data.password, data.role, req.params.id],
-    function (err: Error, result: any) {
+    function (err: Error, _result: any) {
       if (err) {
         res.status(400).json({ error: err });
         return;
@@ -166,14 +166,14 @@ router.delete("/delete/:id", (req, res) => {
     const id = req.params.id;
     const sql = `DELETE FROM users WHERE id = ${id}`;
 
-    db.run(sql, [], function (err: Error, result: any) {
+    db.run(sql, [], function (err: Error, _result: any) {
       if (err) {
         res.status(400).json({ error: err.message });
         return;
       }
       res.json({ message: `Deleted user with id: ${id}` });
     });
-  } catch (e) {
+  } catch (e: any) {
     res.status(400).send(e.message);
   }
 });
